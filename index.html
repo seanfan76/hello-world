@@ -1,0 +1,250 @@
+package ner.controller.admin;
+
+import java.io.PrintWriter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import sf.dao.ReadDAO;
+
+@Controller
+@RequestMapping(value = "/admin/audioCtrl")
+public class AudioCtrl {
+
+	private Logger logger = Logger.getLogger(this.getClass()); 
+	@Autowired
+	private ReadDAO readDAO;
+	
+	
+	@RequestMapping(value = "/getAudioByPage/{currentPage}/{pageRow}",method = RequestMethod.GET)
+	public void getAudioByPage(HttpServletResponse response,HttpServletRequest request
+	,@PathVariable int currentPage,@PathVariable int pageRow)
+	{
+		
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/json");
+		
+		PrintWriter out = null;
+		try
+		{
+			
+			String sql = " select sn,source_file_name,file_path from tb_audio ";
+			JSONObject jsobj  = readDAO.readAllByPage(sql,currentPage,pageRow);
+			/*
+			for(int i = 0; i < jsobj.getJSONArray("list").size(); i++)
+			{
+				if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/upload-audio/") != -1)
+				{
+					
+				}
+				else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("video/") != -1)
+				{
+					String temp = ResourceBundleManager.getWebAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").substring(6);
+					jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+				}
+				else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/movie_") != -1)
+				{
+					String temp = ResourceBundleManager.getDigitAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path");
+					jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+				}
+			}
+			*/
+			
+			out = response.getWriter();
+			out.println(jsobj);
+			
+		}
+		catch(Exception e)
+		{
+			logger.error("getAudioByPage exception",e);
+		}
+		finally
+		{
+			if(out != null)
+			{
+				out.flush();
+				out.close();
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/getAudioByPageByKeyword/{currentPage}/{pageRow}/{keyword}",method = RequestMethod.GET)
+	public void getAudioByPageByKeyword(HttpServletResponse response,HttpServletRequest request
+	,@PathVariable int currentPage,@PathVariable int pageRow,@PathVariable String keyword)
+	{
+		
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/json");
+		
+		PrintWriter out = null;
+		try
+		{
+			
+			String sql = " select sn,source_file_name,file_path from tb_audio where source_file_name like ? ";
+			out = response.getWriter();
+			JSONObject jsobj  = readDAO.readAllByParamAndPage(sql, currentPage, pageRow, new Object[]{"%" + keyword + "%"});
+			/*
+			for(int i = 0; i < jsobj.getJSONArray("list").size(); i++)
+			{
+				if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/upload-audio/") != -1)
+				{
+					
+				}
+				else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("video/") != -1)
+				{
+					String temp = ResourceBundleManager.getWebAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").substring(6);
+					jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+				}
+				else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/movie_") != -1)
+				{
+					String temp = ResourceBundleManager.getDigitAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path");
+					jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+				}
+			}
+			*/
+			out = response.getWriter();
+			out.println(jsobj);
+			
+		}
+		catch(Exception e)
+		{
+			logger.error("getAudioByPageByKeyword exception",e);
+		}
+		finally
+		{
+			if(out != null)
+			{
+				out.flush();
+				out.close();
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/getAudioForTopicByPage/{currentPage}/{pageRow}",method = RequestMethod.GET)
+	public void getAudioForTopicByPage(HttpServletResponse response,HttpServletRequest request
+	,@PathVariable int currentPage,@PathVariable int pageRow)
+	{
+		
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/json");
+		
+		PrintWriter out = null;
+		try
+		{
+			
+			String sql = 
+			" SELECT a.title,a.cover_image_path,c.sn,c.source_file_name,c.file_path,a.sn as episode_sn FROM tb_episode as a "
+			+ " left join tb_episode_audio as b on a.sn = b.episode_sn "
+			+ " left join tb_audio as c on b.episode_sn = c.sn "
+			+ " where a.cover_image_path is not null ";
+			
+			
+			
+			
+			JSONObject jsobj  = readDAO.readAllByPage(sql,currentPage,pageRow);
+			/*
+			for(int i = 0; i < jsobj.getJSONArray("list").size(); i++)
+			{
+				if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/upload-audio/") != -1)
+				{
+					
+				}
+				else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("video/") != -1)
+				{
+					String temp = ResourceBundleManager.getWebAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").substring(6);
+					jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+					//jsobj2.put("file_path",temp);
+				}
+				else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/movie_") != -1)
+				{
+					String temp = ResourceBundleManager.getDigitAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path");
+					jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+					//jsobj2.put("file_path",temp);
+				}
+			}
+			*/
+			
+			out = response.getWriter();
+			out.println(jsobj);
+			
+		}
+		catch(Exception e)
+		{
+			logger.error("getAudioForTopicByPage exception",e);
+		}
+		finally
+		{
+			if(out != null)
+			{
+				out.flush();
+				out.close();
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/getAudioForTopicByPageByKeyword/{currentPage}/{pageRow}/{keyword}",method = RequestMethod.GET)
+	public void getAudioForTopicByPageByKeyword(HttpServletResponse response,HttpServletRequest request
+	,@PathVariable int currentPage,@PathVariable int pageRow,@PathVariable String keyword)
+	{
+		
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/json");
+		
+		PrintWriter out = null;
+		try
+		{
+			
+			String sql = 
+			" SELECT a.title,a.cover_image_path,c.sn,c.source_file_name,c.file_path,a.sn as episode_sn FROM tb_episode as a "
+			+ " left join tb_episode_audio as b on a.sn = b.episode_sn "
+			+ " left join tb_audio as c on b.episode_sn = c.sn "
+			+ " where a.cover_image_path is not null and c.source_file_name like ? ";
+					
+					
+					
+					JSONObject jsobj  = readDAO.readAllByParamAndPage(sql, currentPage, pageRow, new Object[]{"%" + keyword + "%"});
+					/*
+					for(int i = 0; i < jsobj.getJSONArray("list").size(); i++)
+					{
+						if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/upload-audio/") != -1)
+						{
+							
+						}
+						else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("video/") != -1)
+						{
+							String temp = ResourceBundleManager.getWebAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").substring(6);
+							jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+							//jsobj2.put("file_path",temp);
+						}
+						else if(jsobj.getJSONArray("list").getJSONObject(i).getString("file_path").indexOf("/movie_") != -1)
+						{
+							String temp = ResourceBundleManager.getDigitAudioPath() + jsobj.getJSONArray("list").getJSONObject(i).getString("file_path");
+							jsobj.getJSONArray("list").getJSONObject(i).put("file_path", temp);
+							//jsobj2.put("file_path",temp);
+						}
+					}
+					*/
+					out = response.getWriter();
+					out.println(jsobj);
+			
+		}
+		catch(Exception e)
+		{
+			logger.error("getAudioByPageByKeyword exception",e);
+		}
+		finally
+		{
+			if(out != null)
+			{
+				out.flush();
+				out.close();
+			}
+		}
+	}
+}
